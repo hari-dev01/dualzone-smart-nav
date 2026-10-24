@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "author": "DualZone Integrated Logic Demo",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 150, "left": 500, "attrs": {} },
+    {
+      "type": "wokwi-mpu6050",
+      "id": "imu",
+      "top": 20,
+      "left": 30,
+      "attrs": { "accelX": "0", "accelY": "0", "accelZ": "1" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potCaneD",
+      "top": 37.1,
+      "left": 278.2,
+      "attrs": { "value": "200" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potPitch",
+      "top": 35,
+      "left": 430,
+      "attrs": { "value": "512" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potObjRange",
+      "top": 35,
+      "left": 580,
+      "attrs": { "value": "450" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potLateral",
+      "top": 35,
+      "left": 730,
+      "attrs": { "value": "512" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potClosing",
+      "top": 35,
+      "left": 880,
+      "attrs": { "value": "1200" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potConfidence",
+      "top": 35,
+      "left": 1030,
+      "attrs": { "value": "900" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultraL",
+      "top": 145.5,
+      "left": 24.7,
+      "attrs": { "distance": "28" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultraF",
+      "top": 150,
+      "left": 250,
+      "attrs": { "distance": "31" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultraR",
+      "top": 150,
+      "left": 480,
+      "attrs": { "distance": "28" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledSafe",
+      "top": 313.2,
+      "left": 243.8,
+      "attrs": { "color": "green", "label": "SYSTEM CLEAR" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledSafe",
+      "top": 336,
+      "left": 275,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledRaised",
+      "top": 430,
+      "left": 240,
+      "attrs": { "color": "yellow", "label": "RAISED / UNEVEN" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledRaised",
+      "top": 466,
+      "left": 275,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledPriority",
+      "top": 560,
+      "left": 240,
+      "attrs": { "color": "red", "label": "DROP-OFF / PATH CONFLICT" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledPriority",
+      "top": 596,
+      "left": 275,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledLeft",
+      "top": 690,
+      "left": 240,
+      "attrs": { "color": "green", "label": "LEFT ZONE" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledLeft",
+      "top": 726,
+      "left": 275,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledFront",
+      "top": 820,
+      "left": 240,
+      "attrs": { "color": "orange", "label": "FRONT ZONE" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledFront",
+      "top": 856,
+      "left": 275,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledRight",
+      "top": 950,
+      "left": 240,
+      "attrs": { "color": "red", "label": "RIGHT ZONE" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledRight",
+      "top": 986,
+      "left": 275,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledUnknown",
+      "top": 1080,
+      "left": 240,
+      "attrs": { "color": "blue", "label": "LOW CONFIDENCE" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledUnknown",
+      "top": 1116,
+      "left": 275,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "imu:VCC", "esp:3V3", "red", [] ],
+    [ "imu:GND", "esp:GND.1", "black", [] ],
+    [ "imu:SDA", "esp:21", "green", [] ],
+    [ "imu:SCL", "esp:22", "blue", [] ],
+    [ "potCaneD:VCC", "esp:3V3", "red", [] ],
+    [ "potCaneD:GND", "esp:GND.2", "black", [] ],
+    [ "potCaneD:SIG", "esp:34", "green", [] ],
+    [ "potPitch:VCC", "esp:3V3", "red", [] ],
+    [ "potPitch:GND", "esp:GND.2", "black", [] ],
+    [ "potPitch:SIG", "esp:35", "green", [] ],
+    [ "potObjRange:VCC", "esp:3V3", "red", [] ],
+    [ "potObjRange:GND", "esp:GND.2", "black", [] ],
+    [ "potObjRange:SIG", "esp:32", "green", [] ],
+    [ "potLateral:VCC", "esp:3V3", "red", [] ],
+    [ "potLateral:GND", "esp:GND.2", "black", [] ],
+    [ "potLateral:SIG", "esp:33", "green", [] ],
+    [ "potClosing:VCC", "esp:3V3", "red", [] ],
+    [ "potClosing:GND", "esp:GND.2", "black", [] ],
+    [ "potClosing:SIG", "esp:36", "green", [] ],
+    [ "potConfidence:VCC", "esp:3V3", "red", [] ],
+    [ "potConfidence:GND", "esp:GND.2", "black", [] ],
+    [ "potConfidence:SIG", "esp:39", "green", [] ],
+    [ "ultraL:VCC", "esp:5V", "red", [] ],
+    [ "ultraL:GND", "esp:GND.3", "black", [] ],
+    [ "ultraL:TRIG", "esp:5", "green", [] ],
+    [ "ultraL:ECHO", "esp:18", "blue", [] ],
+    [ "ultraF:VCC", "esp:5V", "red", [] ],
+    [ "ultraF:GND", "esp:GND.3", "black", [] ],
+    [ "ultraF:TRIG", "esp:19", "green", [] ],
+    [ "ultraF:ECHO", "esp:23", "blue", [] ],
+    [ "ultraR:VCC", "esp:5V", "red", [] ],
+    [ "ultraR:GND", "esp:GND.3", "black", [] ],
+    [ "ultraR:TRIG", "esp:16", "green", [] ],
+    [ "ultraR:ECHO", "esp:17", "blue", [] ],
+    [ "ledSafe:A", "esp:25", "green", [] ],
+    [ "ledSafe:C", "r_ledSafe:1", "black", [] ],
+    [ "r_ledSafe:2", "esp:GND.4", "black", [] ],
+    [ "ledRaised:A", "esp:26", "green", [] ],
+    [ "ledRaised:C", "r_ledRaised:1", "black", [] ],
+    [ "r_ledRaised:2", "esp:GND.4", "black", [] ],
+    [ "ledPriority:A", "esp:27", "green", [] ],
+    [ "ledPriority:C", "r_ledPriority:1", "black", [] ],
+    [ "r_ledPriority:2", "esp:GND.4", "black", [] ],
+    [ "ledLeft:A", "esp:13", "green", [] ],
+    [ "ledLeft:C", "r_ledLeft:1", "black", [] ],
+    [ "r_ledLeft:2", "esp:GND.4", "black", [] ],
+    [ "ledFront:A", "esp:14", "green", [] ],
+    [ "ledFront:C", "r_ledFront:1", "black", [] ],
+    [ "r_ledFront:2", "esp:GND.4", "black", [] ],
+    [ "ledRight:A", "esp:4", "green", [] ],
+    [ "ledRight:C", "r_ledRight:1", "black", [] ],
+    [ "r_ledRight:2", "esp:GND.4", "black", [] ],
+    [ "ledUnknown:A", "esp:15", "green", [] ],
+    [ "ledUnknown:C", "r_ledUnknown:1", "black", [] ],
+    [ "r_ledUnknown:2", "esp:GND.4", "black", [] ]
+  ],
+  "dependencies": {}
+}
