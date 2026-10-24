@@ -1,0 +1,1092 @@
+{
+  "version": 1,
+  "author": "DualZone Smart Assistive Navigation \u2014 Clean Rebuild",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-breadboard-full",
+      "id": "bbCane",
+      "top": 205,
+      "left": 25,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-breadboard-full",
+      "id": "bbBeltSensors",
+      "top": 205,
+      "left": 1290,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-breadboard-full",
+      "id": "bbBeltIndicators",
+      "top": 590,
+      "left": 1280,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-breadboard-full",
+      "id": "bbBeltIndicatorsLower",
+      "top": 790,
+      "left": 1280,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "mainTitle",
+      "top": 8,
+      "left": 735,
+      "attrs": {
+        "text": "DUALZONE | SMART ASSISTIVE NAVIGATION \u2014 CLEAN INTEGRATED TEST BENCH"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "caneHeader",
+      "top": 58,
+      "left": 165,
+      "attrs": {
+        "text": "01  /  CANE + PERCEPTION INPUTS"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "caneSub",
+      "top": 89,
+      "left": 140,
+      "attrs": {
+        "text": "3 TEST POTENTIOMETERS \u2022 MPU6050"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "espHeader",
+      "top": 58,
+      "left": 790,
+      "attrs": {
+        "text": "02  /  ESP32 DECISION ENGINE"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "espSub",
+      "top": 89,
+      "left": 785,
+      "attrs": {
+        "text": "FILTERING \u2022 CONFIDENCE \u2022 TTC \u2022 STATE MACHINE"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "beltHeader",
+      "top": 58,
+      "left": 1510,
+      "attrs": {
+        "text": "03  /  WAIST BELT OUTPUTS + ZONES"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "beltSub",
+      "top": 89,
+      "left": 1460,
+      "attrs": {
+        "text": "3 ULTRASONIC ZONES \u2022 7 LED STATES \u2022 3 HAZARD BUZZERS"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "modelNote",
+      "top": 125,
+      "left": 745,
+      "attrs": {
+        "text": "ONE-ESP32 SIMULATION HARNESS \u2014 NOT A REAL BLE LINK OR SAFETY-GRADE DEVICE"
+      }
+    },
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 270,
+      "left": 770,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-mpu6050",
+      "id": "imuCane",
+      "top": 210,
+      "left": 70,
+      "attrs": {
+        "accelX": "0",
+        "accelY": "0",
+        "accelZ": "1"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "imuLabel",
+      "top": 177,
+      "left": 58,
+      "attrs": {
+        "text": "CANE IMU / MPU6050"
+      }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potCaneRange",
+      "top": 440,
+      "left": 50,
+      "attrs": {
+        "value": "450"
+      }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potCanePitch",
+      "top": 440,
+      "left": 235,
+      "attrs": {
+        "value": "512"
+      }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potLateral",
+      "top": 440,
+      "left": 420,
+      "attrs": {
+        "value": "512"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "potRangeLabel",
+      "top": 409,
+      "left": 32,
+      "attrs": {
+        "text": "CANE RANGE (SIM)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "potPitchLabel",
+      "top": 409,
+      "left": 225,
+      "attrs": {
+        "text": "CANE PITCH (SIM)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "potLateralLabel",
+      "top": 409,
+      "left": 405,
+      "attrs": {
+        "text": "LATERAL OFFSET (SIM)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "caneNote1",
+      "top": 570,
+      "left": 45,
+      "attrs": {
+        "text": "Pot 1 = range proxy | Pot 2 = pitch proxy | Pot 3 = tracked-object lateral offset"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "caneNote2",
+      "top": 601,
+      "left": 45,
+      "attrs": {
+        "text": "Baseline calibration: hold range and pitch at normal-floor values; Serial Monitor command: c"
+      }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "sonarLeft",
+      "top": 220,
+      "left": 1320,
+      "attrs": {
+        "distance": "130"
+      }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "sonarFront",
+      "top": 220,
+      "left": 1540,
+      "attrs": {
+        "distance": "130"
+      }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "sonarRight",
+      "top": 220,
+      "left": 1760,
+      "attrs": {
+        "distance": "180"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "sonarLeftLabel",
+      "top": 184,
+      "left": 1305,
+      "attrs": {
+        "text": "WEST / LEFT"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "sonarFrontLabel",
+      "top": 184,
+      "left": 1530,
+      "attrs": {
+        "text": "NORTH / FRONT"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "sonarRightLabel",
+      "top": 184,
+      "left": 1748,
+      "attrs": {
+        "text": "EAST / RIGHT"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rEchoLeftTop",
+      "top": 328,
+      "left": 1340,
+      "attrs": {
+        "value": "1000"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rEchoLeftBottom",
+      "top": 375,
+      "left": 1340,
+      "attrs": {
+        "value": "2000"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "echoLeftLabel",
+      "top": 308,
+      "left": 1324,
+      "attrs": {
+        "text": "ECHO DIVIDER"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rEchoFrontTop",
+      "top": 328,
+      "left": 1560,
+      "attrs": {
+        "value": "1000"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rEchoFrontBottom",
+      "top": 375,
+      "left": 1560,
+      "attrs": {
+        "value": "2000"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "echoFrontLabel",
+      "top": 308,
+      "left": 1544,
+      "attrs": {
+        "text": "ECHO DIVIDER"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rEchoRightTop",
+      "top": 328,
+      "left": 1780,
+      "attrs": {
+        "value": "1000"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rEchoRightBottom",
+      "top": 375,
+      "left": 1780,
+      "attrs": {
+        "value": "2000"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "echoRightLabel",
+      "top": 308,
+      "left": 1764,
+      "attrs": {
+        "text": "ECHO DIVIDER"
+      }
+    },
+    {
+      "type": "wokwi-74hc595",
+      "id": "ledDriver",
+      "top": 690,
+      "left": 1310,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "driverLabel",
+      "top": 660,
+      "left": 1286,
+      "attrs": {
+        "text": "74HC595 \u2014 LED OUTPUTS ONLY"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledClear",
+      "top": 640,
+      "left": 1480,
+      "attrs": {
+        "color": "green",
+        "label": "SYSTEM CLEAR",
+        "lightColor": "green"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledClear",
+      "top": 663,
+      "left": 1480,
+      "attrs": {
+        "value": "330"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_ledClear",
+      "top": 616,
+      "left": 1444,
+      "attrs": {
+        "text": "Q0  \u2022  SYSTEM CLEAR"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledRaised",
+      "top": 688,
+      "left": 1480,
+      "attrs": {
+        "color": "yellow",
+        "label": "RAISED / UNEVEN",
+        "lightColor": "yellow"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledRaised",
+      "top": 711,
+      "left": 1480,
+      "attrs": {
+        "value": "330"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_ledRaised",
+      "top": 664,
+      "left": 1444,
+      "attrs": {
+        "text": "Q1  \u2022  RAISED / UNEVEN"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledCritical",
+      "top": 736,
+      "left": 1480,
+      "attrs": {
+        "color": "red",
+        "label": "DROP-OFF / PATH CONFLICT",
+        "lightColor": "red"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledCritical",
+      "top": 759,
+      "left": 1480,
+      "attrs": {
+        "value": "330"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_ledCritical",
+      "top": 712,
+      "left": 1444,
+      "attrs": {
+        "text": "Q2  \u2022  DROP-OFF / PATH CONFLICT"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledLeft",
+      "top": 784,
+      "left": 1480,
+      "attrs": {
+        "color": "blue",
+        "label": "LEFT ZONE",
+        "lightColor": "blue"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledLeft",
+      "top": 807,
+      "left": 1480,
+      "attrs": {
+        "value": "330"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_ledLeft",
+      "top": 760,
+      "left": 1444,
+      "attrs": {
+        "text": "Q3  \u2022  LEFT ZONE"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledFront",
+      "top": 832,
+      "left": 1480,
+      "attrs": {
+        "color": "blue",
+        "label": "FRONT ZONE",
+        "lightColor": "blue"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledFront",
+      "top": 855,
+      "left": 1480,
+      "attrs": {
+        "value": "330"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_ledFront",
+      "top": 808,
+      "left": 1444,
+      "attrs": {
+        "text": "Q4  \u2022  FRONT ZONE"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledRight",
+      "top": 880,
+      "left": 1480,
+      "attrs": {
+        "color": "blue",
+        "label": "RIGHT ZONE",
+        "lightColor": "blue"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledRight",
+      "top": 903,
+      "left": 1480,
+      "attrs": {
+        "value": "330"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_ledRight",
+      "top": 856,
+      "left": 1444,
+      "attrs": {
+        "text": "Q5  \u2022  RIGHT ZONE"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledLowConfidence",
+      "top": 928,
+      "left": 1480,
+      "attrs": {
+        "color": "white",
+        "label": "LOW CONFIDENCE",
+        "lightColor": "blue"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_ledLowConfidence",
+      "top": 951,
+      "left": 1480,
+      "attrs": {
+        "value": "330"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_ledLowConfidence",
+      "top": 904,
+      "left": 1444,
+      "attrs": {
+        "text": "Q6  \u2022  LOW CONFIDENCE"
+      }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzLeft",
+      "top": 720,
+      "left": 1800,
+      "attrs": {
+        "volume": "0.55",
+        "mode": "smooth"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "buzLeftLabel",
+      "top": 692,
+      "left": 1760,
+      "attrs": {
+        "text": "LEFT HAZARD BUZZER"
+      }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzFront",
+      "top": 824,
+      "left": 1800,
+      "attrs": {
+        "volume": "0.75",
+        "mode": "smooth"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "buzFrontLabel",
+      "top": 796,
+      "left": 1760,
+      "attrs": {
+        "text": "FRONT / DROP-OFF BUZZER"
+      }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzRight",
+      "top": 928,
+      "left": 1800,
+      "attrs": {
+        "volume": "0.55",
+        "mode": "smooth"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "buzRightLabel",
+      "top": 900,
+      "left": 1760,
+      "attrs": {
+        "text": "RIGHT HAZARD BUZZER"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "wiringNote1",
+      "top": 1015,
+      "left": 1295,
+      "attrs": {
+        "text": "LED paths: Qx \u2192 330\u03a9 resistor \u2192 LED \u2192 GND. Each LED has its own resistor."
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "wiringNote2",
+      "top": 1045,
+      "left": 1295,
+      "attrs": {
+        "text": "Only confirmed high-confidence hazards sound. LED/resistor branches are independent from buzzer branches."
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "wiringNote3",
+      "top": 1075,
+      "left": 1295,
+      "attrs": {
+        "text": "HC-SR04 ECHO lines each use 1k\u03a9 / 2k\u03a9 divider to protect ESP32 inputs."
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "wiringNote4",
+      "top": 1105,
+      "left": 1295,
+      "attrs": {
+        "text": "Simulation metrics are heuristic only. Do not use this prototype as a mobility safety device."
+      }
+    }
+  ],
+  "connections": [
+    [
+      "esp:TX",
+      "$serialMonitor:RX",
+      "",
+      []
+    ],
+    [
+      "esp:RX",
+      "$serialMonitor:TX",
+      "",
+      []
+    ],
+    [
+      "esp:3V3",
+      "imuCane:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.1",
+      "imuCane:GND",
+      "black",
+      []
+    ],
+    [
+      "esp:21",
+      "imuCane:SDA",
+      "green",
+      []
+    ],
+    [
+      "esp:22",
+      "imuCane:SCL",
+      "blue",
+      []
+    ],
+    [
+      "esp:3V3",
+      "potCaneRange:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.1",
+      "potCaneRange:GND",
+      "black",
+      []
+    ],
+    [
+      "potCaneRange:SIG",
+      "esp:34",
+      "green",
+      []
+    ],
+    [
+      "esp:3V3",
+      "potCanePitch:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.1",
+      "potCanePitch:GND",
+      "black",
+      []
+    ],
+    [
+      "potCanePitch:SIG",
+      "esp:35",
+      "green",
+      []
+    ],
+    [
+      "esp:3V3",
+      "potLateral:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.1",
+      "potLateral:GND",
+      "black",
+      []
+    ],
+    [
+      "potLateral:SIG",
+      "esp:39",
+      "green",
+      []
+    ],
+    [
+      "esp:5V",
+      "sonarLeft:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.2",
+      "sonarLeft:GND",
+      "black",
+      []
+    ],
+    [
+      "esp:18",
+      "sonarLeft:TRIG",
+      "green",
+      []
+    ],
+    [
+      "sonarLeft:ECHO",
+      "rEchoLeftTop:1",
+      "blue",
+      []
+    ],
+    [
+      "rEchoLeftTop:2",
+      "rEchoLeftBottom:1",
+      "blue",
+      []
+    ],
+    [
+      "rEchoLeftTop:2",
+      "esp:32",
+      "blue",
+      []
+    ],
+    [
+      "rEchoLeftBottom:2",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "esp:5V",
+      "sonarFront:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.2",
+      "sonarFront:GND",
+      "black",
+      []
+    ],
+    [
+      "esp:19",
+      "sonarFront:TRIG",
+      "green",
+      []
+    ],
+    [
+      "sonarFront:ECHO",
+      "rEchoFrontTop:1",
+      "blue",
+      []
+    ],
+    [
+      "rEchoFrontTop:2",
+      "rEchoFrontBottom:1",
+      "blue",
+      []
+    ],
+    [
+      "rEchoFrontTop:2",
+      "esp:33",
+      "blue",
+      []
+    ],
+    [
+      "rEchoFrontBottom:2",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "esp:5V",
+      "sonarRight:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.2",
+      "sonarRight:GND",
+      "black",
+      []
+    ],
+    [
+      "esp:23",
+      "sonarRight:TRIG",
+      "green",
+      []
+    ],
+    [
+      "sonarRight:ECHO",
+      "rEchoRightTop:1",
+      "blue",
+      []
+    ],
+    [
+      "rEchoRightTop:2",
+      "rEchoRightBottom:1",
+      "blue",
+      []
+    ],
+    [
+      "rEchoRightTop:2",
+      "esp:36",
+      "blue",
+      []
+    ],
+    [
+      "rEchoRightBottom:2",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "esp:4",
+      "ledDriver:DS",
+      "green",
+      []
+    ],
+    [
+      "esp:13",
+      "ledDriver:SHCP",
+      "blue",
+      []
+    ],
+    [
+      "esp:14",
+      "ledDriver:STCP",
+      "purple",
+      []
+    ],
+    [
+      "esp:3V3",
+      "ledDriver:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.3",
+      "ledDriver:GND",
+      "black",
+      []
+    ],
+    [
+      "esp:GND.3",
+      "ledDriver:OE",
+      "black",
+      []
+    ],
+    [
+      "esp:3V3",
+      "ledDriver:MR",
+      "red",
+      []
+    ],
+    [
+      "ledDriver:Q0",
+      "r_ledClear:1",
+      "green",
+      []
+    ],
+    [
+      "r_ledClear:2",
+      "ledClear:A",
+      "green",
+      []
+    ],
+    [
+      "ledClear:C",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "ledDriver:Q1",
+      "r_ledRaised:1",
+      "yellow",
+      []
+    ],
+    [
+      "r_ledRaised:2",
+      "ledRaised:A",
+      "yellow",
+      []
+    ],
+    [
+      "ledRaised:C",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "ledDriver:Q2",
+      "r_ledCritical:1",
+      "red",
+      []
+    ],
+    [
+      "r_ledCritical:2",
+      "ledCritical:A",
+      "red",
+      []
+    ],
+    [
+      "ledCritical:C",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "ledDriver:Q3",
+      "r_ledLeft:1",
+      "blue",
+      []
+    ],
+    [
+      "r_ledLeft:2",
+      "ledLeft:A",
+      "blue",
+      []
+    ],
+    [
+      "ledLeft:C",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "ledDriver:Q4",
+      "r_ledFront:1",
+      "blue",
+      []
+    ],
+    [
+      "r_ledFront:2",
+      "ledFront:A",
+      "blue",
+      []
+    ],
+    [
+      "ledFront:C",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "ledDriver:Q5",
+      "r_ledRight:1",
+      "blue",
+      []
+    ],
+    [
+      "r_ledRight:2",
+      "ledRight:A",
+      "blue",
+      []
+    ],
+    [
+      "ledRight:C",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "ledDriver:Q6",
+      "r_ledLowConfidence:1",
+      "white",
+      []
+    ],
+    [
+      "r_ledLowConfidence:2",
+      "ledLowConfidence:A",
+      "white",
+      []
+    ],
+    [
+      "ledLowConfidence:C",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "esp:16",
+      "buzLeft:2",
+      "blue",
+      []
+    ],
+    [
+      "buzLeft:1",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "esp:17",
+      "buzFront:2",
+      "red",
+      []
+    ],
+    [
+      "buzFront:1",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "esp:25",
+      "buzRight:2",
+      "cyan",
+      []
+    ],
+    [
+      "buzRight:1",
+      "esp:GND.3",
+      "black",
+      []
+    ]
+  ],
+  "serialMonitor": {
+    "display": "terminal"
+  },
+  "dependencies": {}
+}
