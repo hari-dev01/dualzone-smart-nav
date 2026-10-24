@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "author": "DualZone Test Bench",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-text", "id": "t_title", "top": 0, "left": 260, "attrs": { "text": "DualZone Smart Assistive Navigation - ONE-ESP32 TEST BENCH (simulation only, NOT a safety device)" } },
+
+    { "type": "wokwi-text", "id": "t_cane", "top": 30, "left": 20, "attrs": { "text": "01 / CANE - test inputs" } },
+    { "type": "wokwi-text", "id": "t_pot1", "top": 345, "left": 20, "attrs": { "text": "POT1 CANE RANGE (SIM) > D15" } },
+    { "type": "wokwi-text", "id": "t_pot2", "top": 455, "left": 20, "attrs": { "text": "POT2 CANE PITCH (SIM) > D2" } },
+    { "type": "wokwi-text", "id": "t_pot3", "top": 565, "left": 20, "attrs": { "text": "POT3 LATERAL OFFSET (SIM) > D4" } },
+    { "type": "wokwi-text", "id": "t_mpu", "top": 705, "left": 20, "attrs": { "text": "MPU6050 IMU (fall/jerk) > D21 D22" } },
+
+    { "type": "wokwi-text", "id": "t_esp", "top": 300, "left": 345, "attrs": { "text": "02 / ESP32 DECISION ENGINE" } },
+
+    { "type": "wokwi-text", "id": "t_belt", "top": 30, "left": 640, "attrs": { "text": "03 / WAIST BELT - outputs + zones" } },
+    { "type": "wokwi-text", "id": "t_sens", "top": 440, "left": 640, "attrs": { "text": "ULTRASONIC ZONES (HC-SR04 x3) + ECHO DIVIDERS 1k/2k" } },
+
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 330, "left": 380, "rotate": 180, "attrs": {} },
+
+    { "type": "wokwi-potentiometer", "id": "cane_pot1", "top": 330, "left": 270, "rotate": 270, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "cane_pot2", "top": 440, "left": 270, "rotate": 270, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "cane_pot3", "top": 550, "left": 270, "rotate": 270, "attrs": {} },
+    { "type": "wokwi-mpu6050", "id": "cane_mpu", "top": 690, "left": 250, "rotate": 270, "attrs": {} },
+
+    { "type": "wokwi-resistor", "id": "belt_rS", "top": 70, "left": 700, "attrs": { "value": "330" } },
+    { "type": "wokwi-led", "id": "belt_ledS", "top": 45, "left": 770, "attrs": { "color": "green", "label": "CLEAR" } },
+    { "type": "wokwi-text", "id": "t_pS", "top": 65, "left": 845, "attrs": { "text": "STATUS: SYSTEM CLEAR (D13)" } },
+
+    { "type": "wokwi-buzzer", "id": "belt_bzL", "top": 110, "left": 640, "attrs": { "volume": "0.1" } },
+    { "type": "wokwi-resistor", "id": "belt_rL", "top": 135, "left": 700, "attrs": { "value": "330" } },
+    { "type": "wokwi-led", "id": "belt_ledL", "top": 110, "left": 770, "attrs": { "color": "blue", "label": "LEFT" } },
+    { "type": "wokwi-text", "id": "t_pL", "top": 130, "left": 845, "attrs": { "text": "PAIR 1: LEFT ZONE (D12)" } },
+
+    { "type": "wokwi-buzzer", "id": "belt_bzF", "top": 190, "left": 640, "attrs": { "volume": "0.1" } },
+    { "type": "wokwi-resistor", "id": "belt_rF", "top": 215, "left": 700, "attrs": { "value": "330" } },
+    { "type": "wokwi-led", "id": "belt_ledF", "top": 190, "left": 770, "attrs": { "color": "red", "label": "FRONT" } },
+    { "type": "wokwi-text", "id": "t_pF", "top": 210, "left": 845, "attrs": { "text": "PAIR 2: FRONT ZONE (D14)" } },
+
+    { "type": "wokwi-buzzer", "id": "belt_bzR", "top": 270, "left": 640, "attrs": { "volume": "0.1" } },
+    { "type": "wokwi-resistor", "id": "belt_rR", "top": 295, "left": 700, "attrs": { "value": "330" } },
+    { "type": "wokwi-led", "id": "belt_ledR", "top": 270, "left": 770, "attrs": { "color": "yellow", "label": "RIGHT" } },
+    { "type": "wokwi-text", "id": "t_pR", "top": 290, "left": 845, "attrs": { "text": "PAIR 3: RIGHT ZONE (D27)" } },
+
+    { "type": "wokwi-buzzer", "id": "belt_bzG", "top": 350, "left": 640, "attrs": { "volume": "0.1" } },
+    { "type": "wokwi-resistor", "id": "belt_rG", "top": 375, "left": 700, "attrs": { "value": "330" } },
+    { "type": "wokwi-led", "id": "belt_ledG", "top": 350, "left": 770, "attrs": { "color": "orange", "label": "GROUND" } },
+    { "type": "wokwi-text", "id": "t_pG", "top": 370, "left": 845, "attrs": { "text": "PAIR 4: GROUND / CANE (D26)" } },
+
+    { "type": "wokwi-hc-sr04", "id": "belt_usW", "top": 517, "left": 693, "rotate": 90, "attrs": { "distance": "250" } },
+    { "type": "wokwi-hc-sr04", "id": "belt_usN", "top": 717, "left": 693, "rotate": 90, "attrs": { "distance": "250" } },
+    { "type": "wokwi-hc-sr04", "id": "belt_usE", "top": 917, "left": 693, "rotate": 90, "attrs": { "distance": "250" } },
+    { "type": "wokwi-text", "id": "t_usW", "top": 540, "left": 830, "attrs": { "text": "WEST / LEFT (TRIG D25, ECHO D35)" } },
+    { "type": "wokwi-text", "id": "t_usN", "top": 740, "left": 830, "attrs": { "text": "NORTH / FRONT (TRIG D33, ECHO D34)" } },
+    { "type": "wokwi-text", "id": "t_usE", "top": 940, "left": 830, "attrs": { "text": "EAST / RIGHT (TRIG D32, ECHO VN)" } },
+
+    { "type": "wokwi-resistor", "id": "belt_rW1", "top": 510, "left": 650, "rotate": 90, "attrs": { "value": "1000" } },
+    { "type": "wokwi-resistor", "id": "belt_rW2", "top": 600, "left": 650, "rotate": 90, "attrs": { "value": "2000" } },
+    { "type": "wokwi-resistor", "id": "belt_rN1", "top": 710, "left": 650, "rotate": 90, "attrs": { "value": "1000" } },
+    { "type": "wokwi-resistor", "id": "belt_rN2", "top": 800, "left": 650, "rotate": 90, "attrs": { "value": "2000" } },
+    { "type": "wokwi-resistor", "id": "belt_rE1", "top": 910, "left": 650, "rotate": 90, "attrs": { "value": "1000" } },
+    { "type": "wokwi-resistor", "id": "belt_rE2", "top": 1000, "left": 650, "rotate": 90, "attrs": { "value": "2000" } }
+  ],
+  "connections": [
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []],
+
+    ["esp:3V3", "cane_pot1:VCC", "red", []],
+    ["cane_pot1:VCC", "cane_pot2:VCC", "red", ["h12", "v110"]],
+    ["cane_pot2:VCC", "cane_pot3:VCC", "red", ["h12", "v110"]],
+    ["cane_pot3:VCC", "cane_mpu:VCC", "red", ["h12", "v140"]],
+    ["esp:GND.1", "cane_pot1:GND", "black", []],
+    ["cane_pot1:GND", "cane_pot2:GND", "black", ["h24", "v110"]],
+    ["cane_pot2:GND", "cane_pot3:GND", "black", ["h24", "v110"]],
+    ["cane_pot3:GND", "cane_mpu:GND", "black", ["h24", "v140"]],
+    ["esp:D15", "cane_pot1:SIG", "green", []],
+    ["esp:D2", "cane_pot2:SIG", "green", []],
+    ["esp:D4", "cane_pot3:SIG", "green", []],
+    ["esp:D21", "cane_mpu:SDA", "limegreen", []],
+    ["esp:D22", "cane_mpu:SCL", "gold", []],
+
+    ["esp:GND.2", "belt_ledS:C", "black", []],
+    ["esp:D13", "belt_rS:1", "purple", []],
+    ["belt_rS:2", "belt_ledS:A", "purple", []],
+    ["belt_ledS:C", "belt_bzL:1", "black", ["v14", "h-150"]],
+
+    ["esp:D12", "belt_bzL:2", "magenta", []],
+    ["belt_bzL:2", "belt_rL:1", "purple", []],
+    ["belt_rL:2", "belt_ledL:A", "purple", []],
+    ["belt_ledL:C", "belt_bzL:1", "black", []],
+
+    ["esp:D14", "belt_bzF:2", "magenta", []],
+    ["belt_bzF:2", "belt_rF:1", "purple", []],
+    ["belt_rF:2", "belt_ledF:A", "purple", []],
+    ["belt_ledF:C", "belt_bzF:1", "black", []],
+
+    ["esp:D27", "belt_bzR:2", "magenta", []],
+    ["belt_bzR:2", "belt_rR:1", "purple", []],
+    ["belt_rR:2", "belt_ledR:A", "purple", []],
+    ["belt_ledR:C", "belt_bzR:1", "black", []],
+
+    ["esp:D26", "belt_bzG:2", "magenta", []],
+    ["belt_bzG:2", "belt_rG:1", "purple", []],
+    ["belt_rG:2", "belt_ledG:A", "purple", []],
+    ["belt_ledG:C", "belt_bzG:1", "black", []],
+
+    ["belt_bzL:1", "belt_bzF:1", "black", ["h-22", "v80"]],
+    ["belt_bzF:1", "belt_bzR:1", "black", ["h-22", "v80"]],
+    ["belt_bzR:1", "belt_bzG:1", "black", ["h-22", "v80"]],
+    ["belt_bzG:1", "belt_usW:GND", "black", []],
+
+    ["esp:VIN", "belt_usW:VCC", "red", []],
+    ["belt_usW:VCC", "belt_usN:VCC", "red", ["h-24", "v200"]],
+    ["belt_usN:VCC", "belt_usE:VCC", "red", ["h-24", "v200"]],
+    ["belt_usW:GND", "belt_usN:GND", "black", ["h-36", "v200"]],
+    ["belt_usN:GND", "belt_usE:GND", "black", ["h-36", "v200"]],
+
+    ["esp:D25", "belt_usW:TRIG", "blue", []],
+    ["belt_usW:ECHO", "belt_rW1:1", "orange", []],
+    ["belt_rW1:2", "belt_rW2:1", "orange", []],
+    ["esp:D35", "belt_rW1:2", "orange", []],
+    ["belt_rW2:2", "belt_usW:GND", "black", []],
+
+    ["esp:D33", "belt_usN:TRIG", "blue", []],
+    ["belt_usN:ECHO", "belt_rN1:1", "orange", []],
+    ["belt_rN1:2", "belt_rN2:1", "orange", []],
+    ["esp:D34", "belt_rN1:2", "orange", []],
+    ["belt_rN2:2", "belt_usN:GND", "black", []],
+
+    ["esp:D32", "belt_usE:TRIG", "blue", []],
+    ["belt_usE:ECHO", "belt_rE1:1", "orange", []],
+    ["belt_rE1:2", "belt_rE2:1", "orange", []],
+    ["esp:VN", "belt_rE1:2", "orange", []],
+    ["belt_rE2:2", "belt_usE:GND", "black", []]
+  ],
+  "dependencies": {}
+}
