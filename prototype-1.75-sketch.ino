@@ -1,64 +1,76 @@
 /*
-  DualZone Smart Assistive Navigation - ONE-ESP32 TEST BENCH
+  DualZone Smart Assistive Navigation - ONE-ESP32 TEST BENCH (v3)
   Educational simulation only. NOT a safety device.
 
-  01 CANE : POT1 range, POT2 pitch, POT3 lateral offset, MPU6050
-  02 ESP32: filtering, confirmation, fusion, arbitration
-  03 BELT : 3x HC-SR04, 4 LED+buzzer PAIRS (1 GPIO each), 1 CLEAR LED
+  01 CANE : POT1 handle grip, POT2 pitch (0-180 deg), POT3 lateral offset (0-50 cm), MPU6050
+  02 ESP32: filtering, confirmation, arbitration
+  03 BELT : 3x HC-SR04, 4 LED+buzzer PAIRS (1 GPIO each), 1 SYSTEM-CLEAR LED
 
-  Serial Monitor: send 'c' to calibrate the cane baseline (range + pitch).
+  Cane rules
+    POT1 > 50 %            -> handle held: every LED solid (hazards still pre-empt their own pair)
+    h = offset * cos(pitch)
+    h > 15 cm              -> GROUND pair blinks + buzzer, buzzer pitch rises with h
+                              (15 cm = lowest tone, 50 cm = highest tone)
+  Belt rules
+    Each ultrasonic zone drives ONLY its own pair (W->LEFT, N->FRONT, E->RIGHT).
 */
 #include <Arduino.h>
 #include <Wire.h>
 
 // ---------------- Pins ----------------
-const uint8_t PIN_POT_RANGE = 15, PIN_POT_PITCH = 2, PIN_POT_LAT = 4;
+const uint8_t PIN_POT_GRIP = 15, PIN_POT_PITCH = 2, PIN_POT_OFFSET = 4;
 const uint8_t PIN_SDA = 21, PIN_SCL = 22, MPU_ADDR = 0x68;
 
-const uint8_t PIN_STATUS = 13;                       // SYSTEM CLEAR LED
+const uint8_t PIN_STATUS  = 13;                      // SYSTEM CLEAR LED
 const uint8_t PAIR_PIN[4] = {12, 14, 27, 26};        // 0 LEFT, 1 FRONT, 2 RIGHT, 3 GROUND
+const uint8_t PAIR_CH[4]  = {0, 2, 4, 6};            // even LEDC channels = one timer per pair (no shared tone)
 const uint8_t TRIG_PIN[3] = {25, 33, 32};            // W, N, E
 const uint8_t ECHO_PIN[3] = {35, 34, 39};            // W, N, E (39 = VN)
 
-// ---------------- Tunables (heuristic) ----------------
+// ---------------- Tunables ----------------
+// Belt (ultrasonic)
 const float    MAX_CM = 400, CAUTION_CM = 150, DANGER_CM = 70, NARROW_CM = 100;
 const float    NOISE_CM = 40;            // reading spread above this = low confidence
 const uint8_t  CONFIRM_HITS = 3;         // consecutive danger readings to confirm
-const int      LAT_DEADBAND = 25;        // +-% of path centre
-const float    RANGE_MAX_CM = 120;       // POT1 maps to 0..120 cm ground range
-const float    DROP_CM = 25, STEP_CM = 20, UNEVEN_CM = 12, UNEVEN_PITCH = 15;
-const float    PITCH_MIN = 15, PITCH_MAX = 75;   // outside = cane held implausibly
-const uint8_t  GROUND_HITS = 2;
-const float    JERK_G = 1.5f, TILT_FALL_DEG = 80;
+
+// Cane
+const float    GRIP_ON_PCT = 50, GRIP_OFF_PCT = 45;      // handle detect (small hysteresis)
+const float    PITCH_MAX_DEG = 180;                      // POT2 full scale
+const float    OFFSET_MAX_CM = 50;                       // POT3 full scale
+const float    H_LIMIT_CM = 15, H_FULL_CM = 50;          // alarm threshold / top of tone scale
+const uint16_t GROUND_F_MIN = 600, GROUND_F_MAX = 3000;  // Hz at h = 15 cm / h >= 50 cm
+const uint8_t  GROUND_HITS = 2;                          // consecutive samples above limit
+const float    JERK_G = 1.5f, TILT_FALL_DEG = 80;        // IMU fall / jerk
+
 const uint32_t SENSE_MS = 100, PRINT_MS = 500;
 const uint16_t PAIR_TONE_HZ[4] = {1800, 2400, 3000, 2000};
 
 // Priority order: higher number wins when several rules ask for the same pair
-enum PState : uint8_t { S_OFF, S_CAUTION, S_PENDING, S_STEP, S_DANGER, S_DROPOFF, S_BLOCKED, S_ALARM };
+enum PState : uint8_t { S_OFF, S_CAUTION, S_PENDING, S_DANGER, S_GROUND, S_BLOCKED, S_ALARM };
 enum OutCmd : uint8_t { C_OFF, C_HIGH, C_TONE };
-const char* SN[8] = {"OFF", "CAUTION", "PENDING", "STEP", "DANGER", "DROP-OFF", "BLOCKED", "ALARM"};
-const char* PN[4] = {"L", "F", "R", "G"};
+const char* SN[7] = {"OFF", "CAUTION", "PENDING", "DANGER", "GROUND-H", "BLOCKED", "ALARM"};
 
 // ---------------- LEDC (arduino-esp32 v2 and v3) ----------------
 #if defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)
-  #define PAIR_ATTACH(i)  ledcAttach(PAIR_PIN[i], 2000, 10)
+  #define PAIR_ATTACH(i)  ledcAttachChannel(PAIR_PIN[i], 2000, 10, PAIR_CH[i])
   #define PAIR_TONE(i, f) ledcWriteTone(PAIR_PIN[i], f)
   #define PAIR_DUTY(i, d) ledcWrite(PAIR_PIN[i], d)
 #else
-  #define PAIR_ATTACH(i)  do { ledcSetup(i, 2000, 10); ledcAttachPin(PAIR_PIN[i], i); } while (0)
-  #define PAIR_TONE(i, f) ledcWriteTone(i, f)
-  #define PAIR_DUTY(i, d) ledcWrite(i, d)
+  #define PAIR_ATTACH(i)  do { ledcSetup(PAIR_CH[i], 2000, 10); ledcAttachPin(PAIR_PIN[i], PAIR_CH[i]); } while (0)
+  #define PAIR_TONE(i, f) ledcWriteTone(PAIR_CH[i], f)
+  #define PAIR_DUTY(i, d) ledcWrite(PAIR_CH[i], d)
 #endif
 
 // ---------------- State ----------------
 float    hist[3][3], dist[3] = {MAX_CM, MAX_CM, MAX_CM}, spread[3] = {0, 0, 0};
 uint8_t  hIdx = 0, hits[3] = {0, 0, 0};
-float    rangeCm = 0, pitchDeg = 0, baseRange = 60, basePitch = 45;
-int      latPct = 0;
+float    gripPct = 0, pitchDeg = 0, offsetCm = 0, hCm = 0;
+bool     gripOn = false;
+uint16_t groundFreq = GROUND_F_MIN;
+uint8_t  groundHits = 0;
 float    tiltDeg = 0, jerkG = 0;
 bool     mpuOk = false;
-uint8_t  dropHits = 0, stepHits = 0;
-uint32_t dropUntil = 0, alarmUntil = 0, lastSense = 0, lastPrint = 0;
+uint32_t alarmUntil = 0, lastSense = 0, lastPrint = 0;
 PState   req[4] = {S_OFF, S_OFF, S_OFF, S_OFF};
 OutCmd   lastCmd[4] = {C_OFF, C_OFF, C_OFF, C_OFF};
 uint16_t lastFreq[4] = {0, 0, 0, 0};
@@ -78,7 +90,7 @@ void applyOut(uint8_t i, OutCmd cmd, uint16_t freq) {
   lastCmd[i] = cmd; lastFreq[i] = freq;
   if (cmd == C_OFF)       PAIR_DUTY(i, 0);
   else if (cmd == C_HIGH) PAIR_DUTY(i, 1023);   // steady HIGH: LED on, buzzer silent
-  else                    PAIR_TONE(i, freq);   // square wave: LED blinks + buzzer sounds
+  else                    PAIR_TONE(i, freq);   // square wave: LED lit + buzzer sounds
 }
 
 float readCm(uint8_t z) {
@@ -107,16 +119,16 @@ bool mpuRead(float &ax, float &ay, float &az) {
   return true;
 }
 
-void calibrate() {
-  baseRange = rangeCm; basePitch = pitchDeg; dropHits = stepHits = 0;
-  Serial.printf(">> Calibrated: baseline range=%.0f cm, pitch=%.0f deg\n", baseRange, basePitch);
-}
-
 // ---------------- 01 CANE ----------------
 void readCane(uint32_t now) {
-  rangeCm  = analogRead(PIN_POT_RANGE) * RANGE_MAX_CM / 4095.0f;
-  pitchDeg = analogRead(PIN_POT_PITCH) * 90.0f / 4095.0f;
-  latPct   = map(analogRead(PIN_POT_LAT), 0, 4095, -100, 100);
+  gripPct  = analogRead(PIN_POT_GRIP)   * 100.0f         / 4095.0f;   // POT1: 0..100 %
+  pitchDeg = analogRead(PIN_POT_PITCH)  * PITCH_MAX_DEG  / 4095.0f;   // POT2: 0..180 deg
+  offsetCm = analogRead(PIN_POT_OFFSET) * OFFSET_MAX_CM  / 4095.0f;   // POT3: 0..50 cm
+
+  if (!gripOn && gripPct > GRIP_ON_PCT)       gripOn = true;
+  else if (gripOn && gripPct < GRIP_OFF_PCT)  gripOn = false;
+
+  hCm = offsetCm * cosf(pitchDeg * DEG_TO_RAD);                       // h = offset * cos(pitch)
 
   float ax, ay, az;
   if (mpuOk && mpuRead(ax, ay, az)) {
@@ -145,7 +157,7 @@ void evaluate(uint32_t now) {
   for (uint8_t i = 0; i < 4; i++) req[i] = S_OFF;
   bool conf[3];
 
-  // --- Rule group A: each ultrasonic -> its own zone pair ---
+  // --- Rule group A: each ultrasonic drives ONLY its own zone pair ---
   for (uint8_t z = 0; z < 3; z++) {
     bool inDanger = dist[z] < DANGER_CM;
     if (inDanger) { if (hits[z] < 10) hits[z]++; } else hits[z] = 0;
@@ -156,35 +168,20 @@ void evaluate(uint32_t now) {
     else if (dist[z] < CAUTION_CM)       raise(z, spread[z] > NOISE_CM ? S_PENDING : S_CAUTION);
   }
 
-  // --- Rule group B: POT3 lateral offset steers the FRONT hazard to a side ---
-  if (latPct < -LAT_DEADBAND || latPct > LAT_DEADBAND) {
-    uint8_t side = (latPct < 0) ? 0 : 2;
-    if (conf[1])                          raise(side, S_DANGER);   // FRONT + side
-    else if (dist[1] < CAUTION_CM)        raise(side, S_CAUTION);
-  }
-
-  // --- Rule group C: combinations of ultrasonics ---
+  // --- Rule group B: combinations of ultrasonics ---
   if (dist[0] < NARROW_CM && dist[2] < NARROW_CM && dist[1] >= CAUTION_CM) raise(1, S_CAUTION);  // narrow passage
   if (conf[0] && conf[1] && conf[2]) for (uint8_t z = 0; z < 3; z++) raise(z, S_BLOCKED);        // corridor blocked
 
-  // --- Rule group D: cane range (POT1) + pitch (POT2) -> GROUND pair ---
-  float dev  = rangeCm - baseRange;
-  float pdev = pitchDeg - basePitch;
-  bool plausible = (pitchDeg >= PITCH_MIN && pitchDeg <= PITCH_MAX);
-  if (!plausible) {
-    dropHits = stepHits = 0;
-    raise(3, S_PENDING);                                   // low confidence ground reading
-  } else {
-    dropHits = (dev >= DROP_CM)  ? min<uint8_t>(dropHits + 1, 10) : 0;
-    stepHits = (dev <= -STEP_CM) ? min<uint8_t>(stepHits + 1, 10) : 0;
-    if (dropHits >= GROUND_HITS) dropUntil = now + 1500;   // latch so it is not missed
-    if (now < dropUntil)                    { raise(3, S_DROPOFF); raise(1, S_CAUTION); }  // FRONT LED joins
-    else if (stepHits >= GROUND_HITS)       raise(3, S_STEP);
-    else if (dev >= DROP_CM || dev <= -STEP_CM) raise(3, S_PENDING);
-    else if (fabsf(dev) >= UNEVEN_CM || fabsf(pdev) >= UNEVEN_PITCH) raise(3, S_CAUTION);   // uneven
+  // --- Rule group C: cane geometry h = offset * cos(pitch) -> GROUND pair ---
+  if (hCm > H_LIMIT_CM) { if (groundHits < 10) groundHits++; } else groundHits = 0;
+  if (groundHits >= GROUND_HITS) {
+    raise(3, S_GROUND);
+    float t = (min(hCm, H_FULL_CM) - H_LIMIT_CM) / (H_FULL_CM - H_LIMIT_CM);     // 0 at 15 cm .. 1 at 50 cm
+    float f = GROUND_F_MIN + t * (GROUND_F_MAX - GROUND_F_MIN);
+    groundFreq = 25 * (uint16_t)(f / 25.0f + 0.5f);                                // 25 Hz steps
   }
 
-  // --- Rule group E: IMU fall / jerk overrides everything ---
+  // --- Rule group D: IMU fall / jerk overrides everything ---
   if (now < alarmUntil) for (uint8_t i = 0; i < 4; i++) req[i] = S_ALARM;
 
   clearLed = true;
@@ -194,16 +191,16 @@ void evaluate(uint32_t now) {
 void drivePairs(uint32_t now) {
   for (uint8_t i = 0; i < 4; i++) {
     switch (req[i]) {
-      case S_OFF:     applyOut(i, C_OFF, 0); break;
+      case S_OFF:     applyOut(i, gripOn ? C_HIGH : C_OFF, 0); break;      // handle held -> LED solid
       case S_CAUTION: applyOut(i, C_HIGH, 0); break;
       case S_PENDING: applyOut(i, ((now % 1000) < 500) ? C_HIGH : C_OFF, 0); break;
-      case S_STEP:    if ((now % 800) < 120) applyOut(i, C_TONE, 1500); else applyOut(i, C_OFF, 0); break;
       case S_DANGER:  if ((now % 400) < 200) applyOut(i, C_TONE, PAIR_TONE_HZ[i]); else applyOut(i, C_OFF, 0); break;
-      case S_DROPOFF: if ((now % 160) < 80)  applyOut(i, C_TONE, 3500); else applyOut(i, C_OFF, 0); break;
+      case S_GROUND:  if ((now % 500) < 250) applyOut(i, C_TONE, groundFreq);      else applyOut(i, C_OFF, 0); break;
       case S_BLOCKED: if ((now % 240) < 120) applyOut(i, C_TONE, 2800); else applyOut(i, C_OFF, 0); break;
       case S_ALARM:   if ((now % 500) < 250) applyOut(i, C_TONE, 1200); else applyOut(i, C_OFF, 0); break;
     }
   }
+  // SYSTEM CLEAR LED: on when no hazard, or solid with everything else while the handle is held
   digitalWrite(PIN_STATUS, clearLed ? HIGH : LOW);
 }
 
@@ -217,7 +214,7 @@ void bootTest() {
 void setup() {
   Serial.begin(115200);
   delay(200);
-  Serial.println("\nDualZone ONE-ESP32 test bench (simulation only, NOT a safety device)");
+  Serial.println("\nDualZone ONE-ESP32 test bench v3 (simulation only, NOT a safety device)");
   pinMode(PIN_STATUS, OUTPUT);
   for (uint8_t z = 0; z < 3; z++) {
     pinMode(TRIG_PIN[z], OUTPUT); digitalWrite(TRIG_PIN[z], LOW);
@@ -230,13 +227,11 @@ void setup() {
   Serial.println(mpuOk ? "MPU6050 OK" : "MPU6050 NOT FOUND (fall detection disabled)");
   bootTest();
   readCane(millis());
-  calibrate();                       // start with the current pot positions as 'normal floor'
-  Serial.println("Send 'c' to re-calibrate the cane baseline.");
+  Serial.println("POT1 grip >50% = all LEDs solid | h = POT3 * cos(POT2) | h>15 cm = GROUND alarm");
 }
 
 void loop() {
   uint32_t now = millis();
-  while (Serial.available()) { char c = Serial.read(); if (c == 'c' || c == 'C') calibrate(); }
 
   if (now - lastSense >= SENSE_MS) {
     lastSense = now;
@@ -248,8 +243,9 @@ void loop() {
 
   if (now - lastPrint >= PRINT_MS) {
     lastPrint = now;
-    Serial.printf("US L/F/R=%3.0f/%3.0f/%3.0f cm | range=%3.0f(dev %+4.0f) pitch=%2.0f lat=%+4d%% tilt=%4.1f jerk=%.2fg | L:%s F:%s R:%s G:%s | CLEAR=%d\n",
-                  dist[0], dist[1], dist[2], rangeCm, rangeCm - baseRange, pitchDeg, latPct, tiltDeg, jerkG,
+    Serial.printf("US L/F/R=%3.0f/%3.0f/%3.0f cm | grip=%3.0f%%%s pitch=%5.1f off=%4.1fcm h=%+5.1fcm f=%4uHz | tilt=%4.1f jerk=%.2fg | L:%s F:%s R:%s G:%s | CLEAR=%d\n",
+                  dist[0], dist[1], dist[2], gripPct, gripOn ? "(ON)" : "    ", pitchDeg, offsetCm, hCm,
+                  (req[3] == S_GROUND) ? groundFreq : 0, tiltDeg, jerkG,
                   SN[req[0]], SN[req[1]], SN[req[2]], SN[req[3]], clearLed);
   }
 }
